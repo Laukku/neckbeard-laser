@@ -1,7 +1,7 @@
 /*
   planner.c - buffers movement commands and manages the acceleration profile plan
  Part of Grbl
-
+ 
  Copyright (c) 2009-2011 Simen Svale Skogsrud
 
  Grbl is free software: you can redistribute it and/or modify
