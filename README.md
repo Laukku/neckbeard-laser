@@ -27,6 +27,10 @@ This plugin is based on TurnkeyTyranny's and ajfouls's (and others) work, check 
 Like in TurnkeyTyranny's original plugin, each layer can have different settings for the laser, simply specified in the layer's name. Layer visibility now decides whether a layer is exported or not (the layer's style is searched for "display:none", this happens in effect_curve()). You can show the Layers menu in Inkscape by pressing shift+ctrl+L.
 
 #### Layer parameters
+Layer parameters should be separated by a comma. Whitespace and case doesn't matter. For example: 
+```
+power:10, feed:3000, repeat:2 
+```
 raster - This layer will be rastered using the method specified in the options (TODO: a layer parameter for each raster method)
 
 power:20 - Specifies the laser power to use for this layer. For raster mode, this sets the maximum laser intensity.
