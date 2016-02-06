@@ -59,6 +59,7 @@ Linux: ~/.config/inkscape/extensions/
 
 ##### Upgrading Marlin
 Remember to make a backup of your current working Marlin if you have one - it's helpful to clearly label is as such.
+Copy planner.cpp, motion_control.cpp and motion_control.h into your Marlin folder
 Open Marlin.ino and edit the configurations for your machine, if you need to.
 Upload the program, and that should be that.
 
