@@ -27,7 +27,7 @@ This plugin is based on TurnkeyTyranny's and ajfouls's (and others) work, check 
 Like in TurnkeyTyranny's original plugin, each layer can have different settings for the laser, simply specified in the layer's name. Layer visibility now decides whether a layer is exported or not (the layer's style is searched for "display:none", this happens in effect_curve()). You can show the Layers menu in Inkscape by pressing shift+ctrl+L.
 
 #### Layer parameters
-raster - This layer will be rastered using the method specified in the options (TODO: a layer parameter for each method)
+raster - This layer will be rastered using the method specified in the options (TODO: a layer parameter for each raster method)
 
 power:20 - Specifies the laser power to use for this layer. For raster mode, this sets the maximum laser intensity.
 
@@ -39,13 +39,17 @@ ppm:60 - Pulses per minute
 
 #### Exporting
 In Inkscape, select Extensions > Export > Neckbeard Laser Exporter.
+
 Under Preferences, select where to output the G-code file. Fiddle with settings depending on what you are doing.
+
 Hit Apply. Rastering images takes time. You should check for error messages in the window that opens now, not that there necessarily will be any...
 
 ## Installing
 #### Inkscape Plugin
 Grab neckbeard.py and neckbeard.inx and throw them in:
+
 Windows: C:\Program Files\Inkscape\share\extensions\
+
 Linux: ~/.config/inkscape/extensions/
 
 (Re)start Inkscape.
