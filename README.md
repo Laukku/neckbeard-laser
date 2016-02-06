@@ -2,8 +2,7 @@
 =====
 Inkscape export plugin and Arduino program for DIY laser cutters, based on TurnkeyTyranny's code.
 
-## What
-This repository contains:
+#### This repository contains:
 1. An Inkscape plugin for exporting vector and image data as G-code for use in a laser cutter
 2. A program (Marlin) that runs on an Arduino (with the RAMPS1.4 addon) controlling the laser cutter
 
@@ -29,9 +28,13 @@ Like in TurnkeyTyranny's original plugin, each layer can have different settings
 
 #### Layer parameters
 raster - This layer will be rastered using the method specified in the options (TODO: a layer parameter for each method)
+
 power:20 - Specifies the laser power to use for this layer. For raster mode, this sets the maximum laser intensity.
+
 feed:3000 - The speed at which to move on this layer while the laser is on.
+
 repeat:2 - How many times to cut this layer (repeat:1 is default and means the layer is cut once)
+
 ppm:60 - Pulses per minute
 
 #### Exporting
