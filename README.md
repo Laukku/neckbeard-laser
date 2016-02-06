@@ -1,6 +1,6 @@
 # neckbeard-laser
-Inkscape export plugin and Arduino program for DIY laser cutters, based on TurnkeyTyranny's code.
 =====
+Inkscape export plugin and Arduino program for DIY laser cutters, based on TurnkeyTyranny's code.
 
 ## What
 This repository contains:
@@ -35,7 +35,7 @@ repeat:2 - How many times to cut this layer (repeat:1 is default and means the l
 ppm:60 - Pulses per minute
 
 #### Exporting
-In Inscape, select Extensions > Export > Neckbeard Laser Exporter.
+In Inkscape, select Extensions > Export > Neckbeard Laser Exporter.
 Under Preferences, select where to output the G-code file. Fiddle with settings depending on what you are doing.
 Hit Apply. Rastering images takes time. You should check for error messages in the window that opens now, not that there necessarily will be any...
 
