@@ -1,5 +1,4 @@
 # neckbeard-laser
-=====
 Inkscape export plugin and Arduino program for DIY laser cutters, based on TurnkeyTyranny's code.
 
 #### This repository contains:
