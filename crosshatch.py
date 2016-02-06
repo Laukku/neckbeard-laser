@@ -28,7 +28,7 @@
         inkex.errormsg(str(coords) + '\n')
         
 
-        
+         
         # TODO: Convert to topleft coordinates - they already are?
         # Export image data from svg based on coordinates
         
