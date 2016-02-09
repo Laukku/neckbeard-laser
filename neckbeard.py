@@ -538,7 +538,7 @@ class Gcode_tools(inkex.Effect):
         self.OptionParser.add_option("", "--flip_y", action="store", type="inkbool", dest="flip_y",
                                      default="True", help="")   
         self.OptionParser.add_option("", "--b", action="store", type="inkbool", dest="b",
-                                     default="True", help="")
+                                     default="False", help="")
         self.OptionParser.add_option("", "--dummylength", action="store", type="int", dest="dummylength",
                                      default="8", help="")
         self.OptionParser.add_option("", "--feedratemod", action="store", type="float", dest="feedratemod",
@@ -706,7 +706,8 @@ class Gcode_tools(inkex.Effect):
         
         raster_gcode += ';DPI: %s; That means %s lines/\"pixels\" per mm \n' %(DPI, resolution)
         current_file = self.args[-1]
-        exported_png = self.getTmpPath() + "laser_temp.png"
+		
+        exported_png = os.path.join(self.options.directory, 'laser_temp.png') #self.getTmpPath() + "laser_temp.png"
         raster_gcode += '; ' + exported_png + "\n"
         command = "inkscape \"%s\" -i \"%s\" -j -b\"%s\" -C --export-png=\"%s\" -d %s" % (
             current_file, id, self.options.bg_color, exported_png, DPI)
