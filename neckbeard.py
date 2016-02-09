@@ -100,11 +100,11 @@ SVG_TEXT_TAG = inkex.addNS('text', 'svg')
 SVG_LABEL_TAG = inkex.addNS("label", "inkscape")
 
 GCODE_EXTENSION = ".txt"
-
+raster_gcode = ""
 options = {}
 AREA_WIDTH = 297 # The size of the cutting area
 AREA_HEIGHT = 210 # Assumed to be A4: Outside this area, intensity is set to <=100 
-INTENSITY_CORRECTION = 0.25 # Maximum correction of laser intensity for the largest coordinate values , also affects feedrate modification
+#INTENSITY_CORRECTION = 0.25 # Maximum correction of laser intensity for the largest coordinate values , also affects feedrate modification
 
 ################################################################################
 ###
@@ -541,6 +541,9 @@ class Gcode_tools(inkex.Effect):
                                      default="True", help="")
         self.OptionParser.add_option("", "--dummylength", action="store", type="int", dest="dummylength",
                                      default="8", help="")
+        self.OptionParser.add_option("", "--feedratemod", action="store", type="float", dest="feedratemod",
+                                     default="0.25", help="")
+        
     def parse_curve(self, path):
         xs, ys = 1.0, 1.0
 
@@ -634,18 +637,20 @@ class Gcode_tools(inkex.Effect):
         
     # Correct laser intensity based on the distance the laser beam has to travel to reach the specified x,y coordinates. This sets a cap on the largest available/sensible intensity value in inkscape to 100/(1+INTENSITY_CORRECTION) = default 76.9 @ 0.3 , because values bigger than that would result in intensity values greater than 100 near the lower right corner of the cutting area.
    
-    def intens(self,x1,y1,x2,y2,i):
-        #x = max(x1,x2)
-        #y = max(-y1,-y2)
-        # TODO: If we ever start using svg user units, remove these calculations:
-        x = self.unitScale * (max(x1,x2) * self.options.Xscale + self.options.Xoffset)
-        y = self.unitScale * (min(y1,y2) * -self.options.Yscale + self.options.Yoffset)
-        out = i * (1.0 + (INTENSITY_CORRECTION * ((x+y)/(AREA_HEIGHT+AREA_WIDTH))))
-        #inkex.errormsg("Corrected intensity to %s based on coords: %s,%s" % ("{0:.1f}".format(out),"{0:.1f}".format(x),"{0:.1f}".format(y)))
-        if out > 100: out = 100
-        return out #"{0:.1f}".format(out)
+    #def intens(self,x1,y1,x2,y2,i):
+        ##x = max(x1,x2)
+        ##y = max(-y1,-y2)
+        ## TODO: If we ever start using svg user units, remove these calculations:
+        #x = self.unitScale * (max(x1,x2) * self.options.Xscale + self.options.Xoffset)
+        #y = self.unitScale * (min(y1,y2) * -self.options.Yscale + self.options.Yoffset)
+        #out = i * (1.0 + (INTENSITY_CORRECTION * ((x+y)/(AREA_HEIGHT+AREA_WIDTH))))
+        ##inkex.errormsg("Corrected intensity to %s based on coords: %s,%s" % ("{0:.1f}".format(out),"{0:.1f}".format(x),"{0:.1f}".format(y)))
+        #if out > 100: out = 100
+        #return out #"{0:.1f}".format(out)
+        
     # Reduce feedrate to compensate for lost laser intensity 
     def feedratemod(self,x1,y1,x2,y2,i):
+        INTENSITY_CORRECTION = self.options.feedratemod
         # x = self.unitScale * (max(x1,x2) * self.options.Xscale + self.options.Xoffset)
         # y = self.unitScale * (min(y1,y2) * -self.options.Yscale + self.options.Yoffset)
         x = self.unitScale * (((x1+x2)/2) * self.options.Xscale + self.options.Xoffset)
@@ -654,6 +659,8 @@ class Gcode_tools(inkex.Effect):
         #inkex.errormsg("Corrected intensity to %s based on coords: %s,%s" % ("{0:.1f}".format(out),"{0:.1f}".format(x),"{0:.1f}".format(y)))
         if out < 100: out = 100
         return out #"{0:.1f}".format(out)
+
+
     # Turns a list of arguments into gcode-style parameters (eg (1, 2, 3) -> "X1 Y2 Z3"),
     # taking scaling, offsets and the "parametric curve" setting into account
     def make_args(self, c):
@@ -942,21 +949,24 @@ class Gcode_tools(inkex.Effect):
             return "{0:.1f}".format(max_power - (((max_power - self.options.laser_min_value) * pix) / float(255)))
         
         def G0(x,y,speed="fast"):
-            if speed = "fast":
+            global raster_gcode
+            if speed == "fast":
                 speed = str(F_G00)
             else:
                 speed = str(F_G01)
             raster_gcode += 'G0 X' + "{0:.3f}".format((float(x) / scale)) + ' Y' + "{0:.3f}".format(float(y) / scale) + ' F' + speed +'\n'
         
         def G1(x,y,i):
+            global raster_gcode
             raster_gcode += 'G1 X' + "{0:.3f}".format((float(x) / scale)) + ' Y' + "{0:.3f}".format(float(y) / scale) + ' F' + str(F_G01) + ' S' + i +'\n'
             
         def get_chunks(arr, chunk_size = 51):
             chunks  = [ arr[start:start+chunk_size] for start in range(0, len(arr), chunk_size)]
             return chunks 
         
-        def rasterto(fromx, tox, y, data, di=1):
+        def rasterto(fromx, tox, y, data, di=1): # di = direction 1=right, 0=left
             # Break down data on multiple lines if necessary
+            global raster_gcode
             first=True
             d = get_chunks(data)
             # Go to beginning of raster line
@@ -967,7 +977,7 @@ class Gcode_tools(inkex.Effect):
                 l = str(len(b64))
                 if first:
                     #First line contains direction
-                    raster_gcode += 'G7 $' +di+ ' L' +l+ ' D' + b64 + '\n'
+                    raster_gcode += 'G7 $' +str(di)+ ' L' +l+ ' D' + b64 + '\n'
                     first = False
                 else:
                     raster_gcode += 'G7 L' +l+ ' D' + b64 + '\n'
@@ -978,102 +988,64 @@ class Gcode_tools(inkex.Effect):
         raster_gcode += 'M649 S'+str(max_power)+' B2 D0 R'+str(pixel)+'\n'
         
         
-        maxwhite = 10 # Maximum number of white pixels to allow in a raster command,
+        maxwhite = 20 # Maximum number of white pixels to allow in a raster command,
         y = 0
         x = 0
-        startx = -1
-        endx = 0
-        firstmove = True
-        # lasty = -1 # Y coordinate of previous G1 command
+        startx=0
+        whitepixels = 0
+
         while y < len(gray_array):
             if y % 2 == 0:  # Back and forth motion, start by going right
-                startx = -1
-                endx = 0
+                startx=0
                 while x < len(gray_array[y]):
+                    
                     # if pixel is not white: #(value less than white cut-off value)
                     if gray_array[y][x] >= chr(255-self.options.white_cutoff):
-                        if firstmove: # Make sure to move to beginning of image with the laser off
-                            firstmove=False
-                            # Move to the left of the first pixel
-                            G0(x,y)
-                        
-                        # Grab pixel value
-                        compare_to = gray_array[y][x]
-                        startx = x # Starting to raster here
-                        #TODO: Look at the row of pixels to determine best approach; skip row if all white, break into smaller pieces if over maxwhite white pixels, else raster whole row
-                        
-                        
-                        # G1 to this point but only if needed:
-                        # The end point of the last burning move is different to the starting point of the current burning move
-
-                        #if startx != endx:
-                            # Somewhere in the middle of the row, some white pixels precede the coloured pixel that was found, so move to x with laser off
-                            #G0(x,y,"slow") # Keep moving at the same speed as when rastering
-                            
-                        # loop till white pixels are found again
-                        while x < len(gray_array[y]) and 
-                                gray_array[y][x] >= chr(255-self.options.white_cutoff):
-                            whitelength = 0
-                            while x < len(gray_array[y]) and 
-                                    gray_array[y][x] >= chr(255-self.options.white_cutoff)
-                                whitelength += 1
-                            if whitelength <= maxwhite:
-                                # white area is included in raster format
-                                x += whitelength
+                        # Look at the row of pixels to determine best approach; skip row if all white, break into smaller pieces if over maxwhite white pixels, else raster whole row
+                        startx=x
+                        # loop until too many white pixels are found 
+                        while x < len(gray_array[y]) and whitepixels <= maxwhite:
+                            if gray_array[y][x] >= chr(255-self.options.white_cutoff):
+                                # Pixel is colourful, no problem, look for more pixels
+                                whitepixels = 0 # reset counter
+                                x += 1
                             else:
-                                # White area is so long that it makes more sense to just G0 over it
-                            x += 1  # Advance. Every G1 move is at least 1 pixel long
-                        endx = x
-                        #movesthisrow += 1
-                        # Calculate laser intensity
-                        l = intensity(compare_to)
+                                # Pixel is boring white, count how many of those have been seen in a row
+                                whitepixels += 1
+                                x += 1
+                            
+                        x -= whitepixels # Only raster to the end of colourful pixels. x was advanced too much in the previous loop if it ended in too many white pixels.
                         
                         # Finally, move to beginning of raster line and perform line.
                         data = gray_array[y][startx:x]
-                        rasterto(startx,x,y,data,1)
+                        rasterto(startx,x,y,data,1) # 1= direction: right
                         
                     else: # Did not find a non-white pixel this time, continue right
                         x += 1
             else:  # Coming back left
-                startx = -1
-                endx = 0
-                acceld = False
-                #movesthisrow = 0  # How many moves have already been made on this row
+                startx=-1
                 while x > 0:
                     # if pixel is not white: #(value less than white cut-off value)
-                    if gray_array[y][x - 1] <= self.options.white_cutoff:
-                        if firstmove: # Make sure to move to beginning of image with the laser off
-                                firstmove=False
-                                G(0,x,y)
-                        # Grab pixel value
-                        compare_to = gray_array[y][x - 1]
-                        startx = x
-                        # G0 to this point but only if needed:
-                        # The end point of the last burning move is different to the starting point of the current burning move
-                        # or: this burning move happens on a different row than the previous one.
-                        #if not startx == endx or movesthisrow == 0:  # or not lasty == y:
+                    if gray_array[y][x - 1] >= chr(255-self.options.white_cutoff):
+                        # <= self.options.white_cutoff:
+                        startx=x
+                        while x > 0 and whitepixels <= maxwhite:
+                            if gray_array[y][x-1] >= chr(255-self.options.white_cutoff):
+                                # Pixel is colourful, no problem, look for more pixels
+                                whitepixels = 0 # reset counter
+                                x -= 1
+                            else:
+                                # Pixel is boring white, count how many of those have been seen in a row
+                                whitepixels += 1
+                                x -= 1
                             
-                        if not acceld:
-                            #Move down to current row, leave space for acceleration
-                            raster_gcode += 'G1 X' + "{0:.3f}".format((float(x) / scale)+accel_length) + ' Y' + "{0:.3f}".format(float(y) / scale) + ' F' + str(F_G01)+ ' S0' + '\n'
-                            # Make an accelerating move to the first pixel that was found
-                            raster_gcode += 'G1 X' + "{0:.3f}".format(float(x) / scale) + ' Y' + "{0:.3f}".format(float(y) / scale) + ' F' + str(F_G01)+ ' S0' + '\n'
-                            acceld=True # We have already accelerated on this row
-                        elif startx != endx:
-                            # Somewhere in the middle of the row, some white pixels precede the coloured pixel that was found, so move to x with laser off
-                            raster_gcode += 'G1 X' + "{0:.3f}".format(float(x) / scale) + ' Y' + "{0:.3f}".format(float(y) / scale) + ' F' + str(F_G01)+ ' S0' + '\n'
+                        x += whitepixels # Only raster to the end of colourful pixels. x was advanced too much in the previous loop if it ended in too many white pixels.
                         
-                        # loop till end of similar pixels or beginning of line
-                        while x > 0 and compare_to == gray_array[y][x - 1]:
-                            x -= 1
-                        endx = x
-                        # lasty=y
-                        #movesthisrow += 1
-                        # Calculate laser intensity
-                        l = intensity(compare_to)
-                        # G1 to that point
-                        raster_gcode += 'G1 X' + "{0:.3f}".format(float(x) / scale) + ' Y' + "{0:.3f}".format(float(y) / scale) + ' F' + str(
-                            F_G01) + ' S' + l + b + '\n'
+
+                        # Finally, move to beginning of raster line and perform line.
+                        data = gray_array[y][x:startx]
+                        rasterto(startx,x,y,data,0) # 1= direction: right
+
                     else:
                         x -= 1
               
@@ -1339,7 +1311,7 @@ class Gcode_tools(inkex.Effect):
                     inkex.errormsg("Will raster layer " + layer.get('id') + " using base64 encoding.")
                     gcode_raster += ";Rastering layer " + layer.get('id') + ': ' + label +  '\n'
 
-                    gcode_raster += self.base64Raster(layer.get("id"), layerParams.get('feed',self.options.speed_ON), layerParams.get('resolution',self.options.resolution),
+                    gcode_raster += self.Rasterbase64(layer.get("id"), layerParams.get('feed',self.options.speed_ON), layerParams.get('resolution',self.options.resolution),
                     layerParams.get('power',self.options.laser_max_value))
                 else:
                     inkex.errormsg("Will raster layer " + layer.get('id'))
