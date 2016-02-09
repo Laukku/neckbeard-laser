@@ -42,7 +42,7 @@ crosshatch : Another rastering method, cuts diagonally both ways
 Tried and true values for different materials (40W CO2 laser)
             </_param>
         </page>
-        <page name='tab' _gui-text='Advanced'>
+        <page name='tab' _gui-text='Machine Setup'>
             <param name="mainboard" type="enum" _gui-text="Mainboard/Controller: ">
 				<item value="grbl">GRBL 0.9</item>
                 <item value="ramps">Ramps 1.4</item>
@@ -60,7 +60,8 @@ Tried and true values for different materials (40W CO2 laser)
             <param name="min-arc-radius" type="float" precision="5" min="-1000" max="5000"  _gui-text="Minimum arc radius">0.00005</param>
             <param name="Xoffset" type="float" precision="4" min="-1000" max="1000" _gui-text="Offset along X axis">0.0</param>
             <param name="Yoffset" type="float" precision="4" min="-1000" max="1000" _gui-text="Offset along Y axis">0.0</param>
-            
+            <param name="feedratemod" type="float" precision="3" min="0" max="1" _gui-text="Feed rate modulation">0.25</param>
+            <_param name="feedratemodhelp" type="description">Feedrate is lowered when farther away from the origin point in order to compensate for lost laser power at larger coordinates</_param>
         </page>
         
         <page name='tab' _gui-text='Preferences'>
@@ -115,11 +116,11 @@ Tried and true values for different materials (40W CO2 laser)
 			
 			<param name="white_cutoff" type="int" min="0" max="255" gui-text="Always turn off laser for pixels this bright (0-255):">254</param>
             
-            <param name="dummylength" type="int" min="0" max="20" gui-text="Length of dummy ac/deceleration moves, in mm:">8</param>    
+<!--             <param name="dummylength" type="int" min="0" max="20" gui-text="Length of dummy ac/deceleration moves, in mm:">8</param>     -->
             
-            <param name="b" type="boolean" gui-text="Use feedrate forcing (Triggered by the letter 'B' in gcode, works only in neckbeard-grbl). ">true</param>
-            <_param name="feedrateforcinghelp" type="description">
-Normally GRBL plans only ~10 commands ahead (due to memory constraints). In rastering, moves can be so short that GRBL cannot see far enough in to the future to be able to safely accelerate to the full feed rate, causing burn quality to vary unpredictably. This option convinces GRBL to go at full speed on commands that have specifically been marked for it. This option requires a dummy move on both sides of the rastered object for safe acceleration and deceleration. If your firmware does not support this option, you can still use the dummy moves alone for avoiding overburning at the edges of the raster. The default 8mm is for a feed rate of 5000 and acceleration of 400mm/s^2</_param>
+<!--             <param name="b" type="boolean" gui-text="Use feedrate forcing (Triggered by the letter 'B' in gcode, works only in neckbeard-grbl). ">true</param> -->
+          <!--  <_param name="feedrateforcinghelp" type="description">
+Normally GRBL plans only ~10 commands ahead (due to memory constraints). In rastering, moves can be so short that GRBL cannot see far enough in to the future to be able to safely accelerate to the full feed rate, causing burn quality to vary unpredictably. This option convinces GRBL to go at full speed on commands that have specifically been marked for it. This option requires a dummy move on both sides of the rastered object for safe acceleration and deceleration. If your firmware does not support this option, you can still use the dummy moves alone for avoiding overburning at the edges of the raster. The default 8mm is for a feed rate of 5000 and acceleration of 400mm/s^2</_param>-->
            
         </page>
     </param>    
